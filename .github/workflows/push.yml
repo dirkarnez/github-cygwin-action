@@ -25,7 +25,7 @@ jobs:
           
       - name: Build test
         run: |
-          C:\tools\cygwin\bin\bash.exe --list -c cd %GITHUB_WORKSPACE% && gcc main.c -o main.exe
+          C:\tools\cygwin\bin\bash.exe -l -c cd %GITHUB_WORKSPACE% && gcc main.c -o main.exe
           
       - name: Dir
         run: dir
