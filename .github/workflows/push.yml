@@ -31,7 +31,7 @@ jobs:
           
       - name: Build test
         run: |
-          md build && C:\tools\cygwin\bin\bash.exe -l -c cd %GITHUB_WORKSPACE% && gcc main.c -o build\main.exe
+          md build && C:\tools\cygwin\bin\bash.exe -l -c cd %GITHUB_WORKSPACE% && gcc -static main.c -o build\main.exe
           
       - name: Archive Release
         uses: thedoctor0/zip-release@master
