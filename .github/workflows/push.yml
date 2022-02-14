@@ -1,5 +1,9 @@
 name: cygwin-action-workflow
-on: push
+on: 
+  push:
+    # Sequence of patterns matched against refs/tags
+    tags:
+      - 'v*' # Push events to matching v*, i.e. v1.0, v20.15.10
 
 defaults:
   run:
@@ -14,7 +18,9 @@ jobs:
       fail-fast: true
 
     runs-on: ${{ matrix.os }}
-    
+    env:
+      cygwinTargetZip: main-${{ github.ref_name }}-cygwin.zip
+      
     steps:
       - uses: actions/checkout@v2
 
@@ -25,7 +31,18 @@ jobs:
           
       - name: Build test
         run: |
-          C:\tools\cygwin\bin\bash.exe -l -c cd %GITHUB_WORKSPACE% && gcc main.c -o main.exe
+          md build && C:\tools\cygwin\bin\bash.exe -l -c cd %GITHUB_WORKSPACE% && gcc main.c -o build\main.exe
           
-      - name: Dir
-        run: dir
+      - name: Archive Release
+        uses: thedoctor0/zip-release@master
+        with:
+          type: "zip"
+          directory: "build"
+          filename: "${{ env.cygwinTargetZip }}"
+          
+      - name: Release prebuilt
+        uses: ncipollo/release-action@v1
+        with:
+          artifacts: "build/${{ env.cygwinTargetZip }}"
+          allowUpdates: true
+          token: ${{ secrets.GITHUB_TOKEN }}
