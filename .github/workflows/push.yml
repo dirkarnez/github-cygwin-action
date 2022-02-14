@@ -1,0 +1,31 @@
+name: cygwin-action-workflow
+on: push
+
+defaults:
+  run:
+    shell: cmd
+    
+jobs:
+  build_cygwin:
+    strategy:
+      matrix:
+        os: [windows-2019]
+        arch: [x64, x86]
+      fail-fast: true
+
+    runs-on: ${{ matrix.os }}
+    
+    steps:
+      - uses: actions/checkout@v2
+
+      - name: Set up Cygwin
+        uses: egor-tensin/setup-cygwin@v3
+        with:
+          platform: ${{ matrix.arch }}
+          
+      - name: Build test
+        run: |
+          C:\tools\cygwin\bin\bash.exe --list -c cd %GITHUB_WORKSPACE% && gcc main.c -o main.exe
+          
+      - name: Dir
+        run: dir
