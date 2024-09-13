@@ -43,9 +43,6 @@ jobs:
       - shell: cmd
         run: xcopy /H /Y /C "C:\tools\cygwin\bin\cygwin1.dll" "build"
         
-      - shell: cmd
-        run: cd tree && cd installation && dir
-        
       - name: Archive Release
         uses: thedoctor0/zip-release@master
         with:
