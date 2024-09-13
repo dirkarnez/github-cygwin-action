@@ -1,48 +1,61 @@
 name: cygwin-action-workflow
-on: 
+on:
   push:
     # Sequence of patterns matched against refs/tags
     tags:
       - 'v*' # Push events to matching v*, i.e. v1.0, v20.15.10
-
-defaults:
-  run:
-    shell: cmd
-    
-jobs:
-  build_cygwin:
-    strategy:
-      matrix:
-        os: [windows-2019]
-        arch: [x64, x86]
-      fail-fast: true
-
-    runs-on: ${{ matrix.os }}
-    env:
-      cygwinTargetZip: main-${{ github.ref_name }}-cygwin.zip
+      - 'c*'
       
+permissions:
+    contents: write
+
+jobs:
+  build:
+    runs-on: windows-latest
+    defaults:
+      run:
+        shell: C:\tools\cygwin\bin\bash.exe --login -o igncr '{0}'
+    # env:
+    #   libraryName: libgpg-error
+    #   installationPath: libgpg-error-installation
+    #   mingwTargetZip: libgpg-error-${{ github.ref_name }}-mingw64-x86_64-posix-seh-rev0-8.1.0.zip
     steps:
-      - uses: actions/checkout@v2
+      #       tagName: libgpg-error-1.47
+      # - name: git clone
+      #   shell: cmd
+      #   run: git clone --recurse-submodules https://dev.gnupg.org/source/libgpg-error.git && cd libgpg-error && git checkout ${{ env.tagName }}
+      - uses: actions/checkout@v4
 
       - name: Set up Cygwin
-        uses: egor-tensin/setup-cygwin@v3
+        uses: egor-tensin/setup-cygwin@v4
         with:
-          platform: ${{ matrix.arch }}
+          packages: gcc-g++ make
           
-      - name: Build test
-        run: |
-          md build && C:\tools\cygwin\bin\bash.exe -l -c cd %GITHUB_WORKSPACE% && gcc -static main.c -o build\main.exe
-          
+      - run: |
+          echo $(pwd) && \
+          ls && \
+          cd '${{ github.workspace }}' && \
+          ls && \
+          g++ --version && \
+          mkdir build && \
+          gcc -static main.c -o build/main.exe
+
+      - shell: cmd
+        run: xcopy /H /Y /C "C:\tools\cygwin\bin\cygwin1.dll" "build"
+        
+      - shell: cmd
+        run: cd tree && cd installation && dir
+        
       - name: Archive Release
         uses: thedoctor0/zip-release@master
         with:
-          type: "zip"
+          type: 'zip'
           directory: "build"
-          filename: "${{ env.cygwinTargetZip }}"
-          
+          filename: "helloworld-${{ github.ref_name }}-cygwin.zip"
+        
       - name: Release prebuilt
         uses: ncipollo/release-action@v1
         with:
-          artifacts: "build/${{ env.cygwinTargetZip }}"
+          artifacts: "build/helloworld-${{ github.ref_name }}-cygwin.zip"
           allowUpdates: true
           token: ${{ secrets.GITHUB_TOKEN }}
